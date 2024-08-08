@@ -1,7 +1,4 @@
-<a href="https://www.llamacoder.io">
-  <img alt="Llama Coder" src="./public/og-image.png">
-  <h1 align="center">ai-coder</h1>
-</a>
+
 
 <p align="center">
   An open source Claude Artifacts – generate small apps with one prompt. Powered by Llama 3 405B & Together.ai.
