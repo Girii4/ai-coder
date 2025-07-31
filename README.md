@@ -1,5 +1,4 @@
 <a href="https://www.llamacoder.io">
-  <img alt="Llama Coder" src="./public/og-image.png">
   <h1 align="center">Llama Coder</h1>
 </a>
 
@@ -20,6 +19,3 @@
 2. Create a `.env` file and add your [Together AI API key](https://togetherai.link/?utm_source=llamacoder&utm_medium=referral&utm_campaign=example-app): `TOGETHER_API_KEY=`
 3. Run `npm install` and `npm run dev` to install dependencies and run locally
 
-## Contributing
-
-For contributing to the repo, please see the [contributing guide](./CONTRIBUTING.md)
