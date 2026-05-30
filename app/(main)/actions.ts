@@ -26,8 +26,20 @@ export async function createChat(
     },
   });
 
-  let options: ConstructorParameters<typeof Together>[0] = {};
-  if (process.env.HELICONE_API_KEY) {
+  const rawTogetherKey = (process.env.TOGETHER_API_KEY || "").trim();
+  const rawGeminiKey = (process.env.GEMINI_API_KEY || "").trim();
+  const isGemini = rawGeminiKey !== "" || rawTogetherKey.startsWith("AIzaSy") || rawTogetherKey.startsWith("AQ.");
+  const apiKey = isGemini
+    ? (rawGeminiKey !== "" ? rawGeminiKey : rawTogetherKey)
+    : rawTogetherKey;
+
+  let options: ConstructorParameters<typeof Together>[0] = {
+    apiKey: apiKey,
+  };
+
+  if (isGemini) {
+    options.baseURL = "https://generativelanguage.googleapis.com/v1beta/openai";
+  } else if (process.env.HELICONE_API_KEY) {
     options.baseURL = "https://together.helicone.ai/v1";
     options.defaultHeaders = {
       "Helicone-Auth": `Bearer ${process.env.HELICONE_API_KEY}`,
@@ -41,7 +53,7 @@ export async function createChat(
 
   async function fetchTitle() {
     const responseForChatTitle = await together.chat.completions.create({
-      model: "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
+      model: isGemini ? "gemini-2.5-flash" : "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
       messages: [
         {
           role: "system",
@@ -60,7 +72,7 @@ export async function createChat(
 
   async function fetchTopExample() {
     const findSimilarExamples = await together.chat.completions.create({
-      model: "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
+      model: isGemini ? "gemini-2.5-flash" : "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
       messages: [
         {
           role: "system",
@@ -92,7 +104,7 @@ export async function createChat(
   let fullScreenshotDescription;
   if (screenshotUrl) {
     const screenshotResponse = await together.chat.completions.create({
-      model: "meta-llama/Llama-3.2-90B-Vision-Instruct-Turbo",
+      model: isGemini ? "gemini-2.5-flash" : "meta-llama/Llama-3.2-90B-Vision-Instruct-Turbo",
       temperature: 0.2,
       max_tokens: 1000,
       messages: [
@@ -117,7 +129,7 @@ export async function createChat(
   let userMessage: string;
   if (quality === "high") {
     let initialRes = await together.chat.completions.create({
-      model: "Qwen/Qwen2.5-Coder-32B-Instruct",
+      model: isGemini ? "gemini-2.5-flash" : "Qwen/Qwen2.5-Coder-32B-Instruct",
       messages: [
         {
           role: "system",

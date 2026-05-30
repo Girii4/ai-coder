@@ -17,10 +17,51 @@ import { use, useState, useRef, useTransition } from "react";
 import { createChat } from "./actions";
 import { Context } from "./providers";
 import Header from "@/components/header";
-import { useS3Upload } from "next-s3-upload";
 import UploadIcon from "@/components/icons/upload-icon";
 import { XCircleIcon } from "@heroicons/react/20/solid";
 import { MODELS, SUGGESTED_PROMPTS } from "@/lib/constants";
+
+function compressAndResizeImage(file: File, maxWidth = 800, maxHeight = 800): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new window.Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const dataUrl = canvas.toDataURL("image/jpeg", 0.7); // 70% quality JPEG
+          resolve(dataUrl);
+        } else {
+          resolve(event.target?.result as string);
+        }
+      };
+      img.onerror = () => reject(new Error("Failed to load image"));
+      img.src = event.target?.result as string;
+    };
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+}
 
 export default function Home() {
   const { setStreamPromise } = use(Context);
@@ -38,14 +79,19 @@ export default function Home() {
 
   const [isPending, startTransition] = useTransition();
 
-  const { uploadToS3 } = useS3Upload();
   const handleScreenshotUpload = async (event: any) => {
     if (prompt.length === 0) setPrompt("Build this");
     setQuality("low");
     setScreenshotLoading(true);
     let file = event.target.files[0];
-    const { url } = await uploadToS3(file);
-    setScreenshotUrl(url);
+    if (file) {
+      try {
+        const compressedDataUrl = await compressAndResizeImage(file);
+        setScreenshotUrl(compressedDataUrl);
+      } catch (err) {
+        console.error("Image compression error:", err);
+      }
+    }
     setScreenshotLoading(false);
   };
 
@@ -355,5 +401,4 @@ function LoadingMessage({
   );
 }
 
-export const runtime = "edge";
 export const maxDuration = 45;
