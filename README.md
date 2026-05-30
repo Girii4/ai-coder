@@ -9,7 +9,7 @@
 ## Tech stack
 
 - [Llama 3.1 405B](https://ai.meta.com/blog/meta-llama-3-1/) from Meta for the LLM
-- [Together AI](https://togetherai.link/?utm_source=llamacoder&utm_medium=referral&utm_campaign=example-app) for LLM inference or [Google Gemini API].(https://aistudio.google.com/api-keys)
+- [Together AI](https://togetherai.link/?utm_source=llamacoder&utm_medium=referral&utm_campaign=example-app) for LLM inference or Google Gemini API.  https://aistudio.google.com/api-keys
 - [Sandpack](https://sandpack.codesandbox.io/) for the code sandbox
 
 
